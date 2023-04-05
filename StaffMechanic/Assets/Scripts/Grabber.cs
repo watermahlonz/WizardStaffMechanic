@@ -10,7 +10,7 @@ using UnityEngine;
 public class Grabber : MonoBehaviour
 {
     //Object that has been selected and will be set null when not picked up
-    public GameObject selectedObject;
+    public static GameObject selectedObject;
     void Start()
     {
         
@@ -31,6 +31,12 @@ public class Grabber : MonoBehaviour
                     {
                         selectedObject = hit.transform.gameObject;
                     }
+                    
+                    else if (hit.transform.CompareTag("Staff") && GameManager.instance.currentSouls == GameManager.instance.maxSouls && GameManager.instance.abilityActivated)
+                    {
+                        selectedObject = hit.transform.gameObject;
+                        StartCoroutine(DecreaseSoulsOverTime(1, 1));
+                    }
                 } 
             }
 
@@ -47,5 +53,19 @@ public class Grabber : MonoBehaviour
             Vector3 worldPosition = Camera.main.ScreenToWorldPoint(position);
             selectedObject.transform.position = new Vector3(worldPosition.x, worldPosition.y, worldPosition.z);
         }
+    }
+    
+    IEnumerator DecreaseSoulsOverTime(int amount, float delay)
+    {
+        float elapsedTime = 0f;
+        while (GameManager.instance.currentSouls >= 1)
+        {
+            yield return new WaitForSeconds(delay);
+            GameManager.instance.currentSouls -= amount;
+            elapsedTime += 1f;
+        }
+        
+        GameManager.instance.abilityActivated = false;
+        StopCoroutine("DecreaseSoulsOverTime");
     }
 }
